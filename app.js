@@ -10,6 +10,7 @@ import passport from "passport";
 import Strategy from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "./models/user.js";
+import Product from "./models/products.js"; // import product model to register it
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();

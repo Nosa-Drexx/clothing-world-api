@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import * as localMongoose from "passport-local-mongoose";
+
 const Schema = mongoose.Schema;
+const { ObjectId } = Schema;
 
 const UserSchema = new Schema({
   email: {
@@ -12,6 +14,24 @@ const UserSchema = new Schema({
   avatarUrl: { type: String, required: false },
   firstname: { type: String, required: true },
   lastname: { type: String, required: true },
+  //optional cart field
+  cart: {
+    type: [
+      {
+        productId: {
+          type: ObjectId,
+          ref: "Product", // Reference to the Product model
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+          min: 1, // Ensure that amount is at least 1
+        },
+      },
+    ],
+    default: [],
+  },
 });
 const passportLocalMongoose = localMongoose.default;
 

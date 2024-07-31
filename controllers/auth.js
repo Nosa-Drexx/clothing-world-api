@@ -13,12 +13,16 @@ export const register = async (req, res) => {
 
     const user = new User({
       email,
-      username: username.toLowerCase(),
+      username,
       firstname,
       lastname,
+      cart: [{ productId: "66aa6a24084a820680248856", amount: 1 }], //delete later
     });
     const registeredUser = await User.register(user, password);
-    req.login(registeredUser, (error) => {
+    const populatedRegisteredUser = await registeredUser.populate({
+      path: "cart.productId", // Populate the productId field within the cart array
+    });
+    req.login(populatedRegisteredUser, (error) => {
       if (error)
         return res.status().json({
           success: false,
@@ -40,7 +44,7 @@ export const login = async (req, res) => {
   }
 
   try {
-    passport.authenticate("local", function (err, user, info) {
+    passport.authenticate("local", async function (err, user, info) {
       if (err) {
         res.json({ success: false, message: err });
       } else {
@@ -50,9 +54,10 @@ export const login = async (req, res) => {
             message: "username or password incorrect",
           });
         } else {
+          const populatedUser = await user.populate({ path: "cart.productId" });
           res.status(200).json({
             ...successMessage,
-            data: { message: "Authentication successful" },
+            data: { message: "Authentication successful", user: populatedUser },
           });
         }
       }
