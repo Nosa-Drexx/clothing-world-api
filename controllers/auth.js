@@ -81,3 +81,15 @@ export const logout = (req, res) => {
       .json({ ...successMessage, data: { message: "logout successful" } });
   });
 };
+
+export const isAutheticated = async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const user = await req.user.populate({ path: "cart.productId" });
+      return res.status(200).json({ ...successMessage, data: user });
+    }
+    return res.status(401).json({ message: "Unauthorized" });
+  } catch (e) {
+    return res.status(400).json({ success: false, error: e.message });
+  }
+};
