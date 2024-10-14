@@ -6,7 +6,7 @@ import {
   register,
 } from "../controllers/auth.js";
 import passport from "passport";
-import { requireLogin } from "../middleware/auth.js";
+import { getRedirectToFromClient, requireLogin } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -18,6 +18,7 @@ router.get("/authenticated", requireLogin, isAutheticated);
 //Login with google
 router.get(
   "/auth/google",
+  getRedirectToFromClient,
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
@@ -25,23 +26,17 @@ router.get(
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/auth/google-auth-error",
+    failureRedirect: `${process.env.CLIENT_ENDPOINT}/login`,
   }),
   function (req, res) {
     // Successful authentication, redirect home or where you want
+    const redirectTo = req.session.redirectTo || "/";
 
-    return res
-      .status(200)
-      .json({ success: true, googleAuthStatus: "success", data: req.user });
+    // Clear the session variable (optional, but good practice)
+    req.session.redirectTo = null;
+
+    return res.redirect(`${process.env.CLIENT_ENDPOINT}${redirectTo}`);
   }
 );
-
-router.get("/auth/google-auth-error", (req, res) => {
-  return res.status(400).json({
-    success: false,
-    googleAuthStatus: "error",
-    error: "Error Authticating with google",
-  });
-});
 
 export { router };

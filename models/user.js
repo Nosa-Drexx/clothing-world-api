@@ -10,7 +10,7 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
   },
-  googleId: { type: String, unique: true, required: false }, //for google login
+  googleId: { type: String, required: false, default: null }, //for google login
   avatarUrl: { type: String, required: false },
   firstname: { type: String, required: true },
   lastname: { type: String, required: true },

@@ -4,10 +4,21 @@ import User from "../models/user.js";
 const successMessage = { success: true, data: null };
 export const register = async (req, res) => {
   try {
-    const { email, username, password, firstname, lastname } = req.body;
+    const { email, username, password, firstname, lastname, googleId } =
+      req.body;
     if (!username || !password || !email || !firstname || !lastname) {
       return res.status(400).json({
         error: "username, password, email, firstname and lastname are required",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "username or email address already exist",
       });
     }
 
@@ -16,8 +27,10 @@ export const register = async (req, res) => {
       username,
       firstname,
       lastname,
+      googleId: googleId || undefined,
       cart: [{ productId: "66aa6a24084a820680248856", amount: 1 }], //delete later
     });
+
     const registeredUser = await User.register(user, password);
     const populatedRegisteredUser = await registeredUser.populate({
       path: "cart.productId", // Populate the productId field within the cart array
@@ -88,7 +101,7 @@ export const isAutheticated = async (req, res) => {
       const user = await req.user.populate({ path: "cart.productId" });
       return res.status(200).json({ ...successMessage, data: user });
     }
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized", logedIn: false });
   } catch (e) {
     return res.status(400).json({ success: false, error: e.message });
   }

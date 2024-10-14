@@ -51,13 +51,14 @@ store.on("error", (e) => {
 //sesssions configuration
 const sessionConfig = {
   store,
-  name: "session",
+  name: "clothing-world-session",
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitalized: true,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production" ? true : false,
+    // secure: process.env.NODE_ENV === "production" ? true : false,
+    secure: false,
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7, //current date(returns in milliseconds) + 1 week (in milliseconds)
     maxAge: 1000 * 60 * 60 * 24 * 7, //1 week in milliseconds
   },
@@ -67,7 +68,13 @@ const sessionConfig = {
 const app = express();
 const PORT = process.env.NODE_ENV === "production" ? process.env.PORT : 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // or '*' for wildcard, but not recommended in production
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
@@ -138,4 +145,12 @@ readdirSync("./routes").map(async (routefileName) => {
 
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
+});
+
+app.get("/", (req, res) => {
+  try {
+    res.status(200).send("Welcome to Clothing World API");
+  } catch (e) {
+    res.status(500).send({ success: false, error: e.message });
+  }
 });
